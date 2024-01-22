@@ -15,8 +15,6 @@ const app = () => {
       const email = (document.getElementById("signin-email") as any).value;
       const password = (document.getElementById("signin-password") as any).value;
 
-      console.log(email, password);
-
       const authorization = {
         email,
         password

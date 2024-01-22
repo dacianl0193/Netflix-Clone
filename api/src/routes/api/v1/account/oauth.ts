@@ -10,7 +10,6 @@ router.post("/api/v1/account/oauth/token", async (req: Request, res: Response) =
     switch (req.body.grant_type) {
         case "client_credentials": {
             if (req.headers["authorization"] === undefined) {
-                console.log("no auth header");
                 
                 return res.status(401).json({
                     error: "invalid_credentials",
@@ -30,7 +29,6 @@ router.post("/api/v1/account/oauth/token", async (req: Request, res: Response) =
                         const account = await database.findOne("users", { email: email.toLowerCase() });
 
                         if (!account) {
-                            console.log("no account");
 
                             return res.status(401).json({
                                 error: "invalid_credentials",
@@ -41,7 +39,6 @@ router.post("/api/v1/account/oauth/token", async (req: Request, res: Response) =
                         const match = await bcrypt.compare(password, account.password);
                         
                         if (!match) {
-                            console.log("no match");
 
                             return res.status(401).json({
                                 error: "invalid_credentials",
