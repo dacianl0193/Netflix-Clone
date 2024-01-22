@@ -10,6 +10,8 @@ router.post("/api/v1/account/oauth/token", async (req: Request, res: Response) =
     switch (req.body.grant_type) {
         case "client_credentials": {
             if (req.headers["authorization"] === undefined) {
+                console.log("no auth header");
+                
                 return res.status(401).json({
                     error: "invalid_credentials",
                     error_description: "The user credentials were incorrect."
@@ -21,11 +23,15 @@ router.post("/api/v1/account/oauth/token", async (req: Request, res: Response) =
             switch (type) {
                 case "Basic": {
                     try {
-                        const { email, password } = JSON.parse(Buffer.from(credentials, "base64").toString())
+                        const { email, password } = JSON.parse(Buffer.from(credentials, "base64").toString());
+
+                        console.log(email, password);
 
                         const account = await database.findOne("users", { email: email.toLowerCase() });
 
                         if (!account) {
+                            console.log("no account");
+
                             return res.status(401).json({
                                 error: "invalid_credentials",
                                 error_description: "The user credentials were incorrect."
@@ -35,6 +41,8 @@ router.post("/api/v1/account/oauth/token", async (req: Request, res: Response) =
                         const match = await bcrypt.compare(password, account.password);
                         
                         if (!match) {
+                            console.log("no match");
+
                             return res.status(401).json({
                                 error: "invalid_credentials",
                                 error_description: "The user credentials were incorrect."

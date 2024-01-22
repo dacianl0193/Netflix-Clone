@@ -9,6 +9,7 @@ const router: Router = Router();
 router.post("/api/v1/account/register", async (req: Request, res: Response) => {
     const { email, password, recaptchaToken } = req.body;
 
+    /*
     const response = await axios.post("https://www.google.com/recaptcha/api/siteverify", null, {
         params: {
             secret: config.recaptcha.secretKey,
@@ -23,6 +24,7 @@ router.post("/api/v1/account/register", async (req: Request, res: Response) => {
             error_description: "The recaptcha token provided is invalid."
         })
     }
+    */
 
     const account = await database.findOne("users", { email: email.toLowerCase() });
 

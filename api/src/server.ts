@@ -3,6 +3,7 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import register from "./routes/api/v1/account/register";
 import oauth from "./routes/api/v1/account/oauth";
 import { logger } from ".";
+import cors from "cors";
 
 interface ServerOptions {
     port: number
@@ -18,6 +19,7 @@ export class Server {
         this.port = port;
 
         this.app.use(express.json());
+        this.app.use(cors());
 
         this.app.use(oauth);
         this.app.use(register);
