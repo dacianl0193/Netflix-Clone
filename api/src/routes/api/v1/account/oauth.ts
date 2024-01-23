@@ -29,7 +29,6 @@ router.post("/api/v1/account/oauth/token", async (req: Request, res: Response) =
                         const account = await database.findOne("users", { email: email.toLowerCase() });
 
                         if (!account) {
-
                             return res.status(401).json({
                                 error: "invalid_credentials",
                                 error_description: "The user credentials were incorrect."
@@ -45,6 +44,8 @@ router.post("/api/v1/account/oauth/token", async (req: Request, res: Response) =
                                 error_description: "The user credentials were incorrect."
                             })
                         }
+
+
 
                         const token = TokenUtils.generateAccessToken(account);
 

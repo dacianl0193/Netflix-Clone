@@ -1,3 +1,16 @@
+html {
+    overflow: scroll;
+    overflow-x: hidden;
+}
+::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
+}
+/* Optional: show position indicator in red */
+::-webkit-scrollbar-thumb {
+    background: #FF0000;
+}
+
 #grid-container {
     background:
         linear-gradient(to right, #ff0000 1px, transparent 1px),
@@ -77,4 +90,14 @@
     100% {
         background-position: 0 150px;
     }
+
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
 }

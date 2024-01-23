@@ -2,38 +2,51 @@
 
 import { useState } from "react";
 import "../../../../styles/account.login.register.css"
-import axios from "axios";
 import { API_BASE_URL } from "@/app/layout";
+
+import ReCAPTCHA from 'react-google-recaptcha';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from "axios";
 
 const app = () => {
-  const [ signingIn, setSigningIn ] = useState(false);
+  const [ registering, setRegistering ] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState("");
 
   const handleRecaptchaChange = (token: string) => {
     setRecaptchaToken(token);
-    document.getElementById("button-signin")?.removeAttribute("disabled");
+    document.getElementById("button-register")?.removeAttribute("disabled");
 }
 
-  const handleLogin = () => {
-    setSigningIn(true);
+  const handleRegistration = () => {
+    setRegistering(true);
+
+    const email = (document.getElementById("signin-email") as any)?.value;
+    const password = (document.getElementById("signin-password") as any)?.value;
+  
+    const isNone = (value: any) => {
+      return value === undefined || value === null || value === "";
+    }
+
+    if (isNone(email) || isNone(password)) {
+        toast.error("Please fill out all the fields.", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            closeButton: false,
+            pauseOnHover: true,
+            draggable: false,
+            progress: undefined,
+            theme: "dark",
+        })
+    }
 
     try {
-      const email = (document.getElementById("signin-email") as any).value;
-      const password = (document.getElementById("signin-password") as any).value;
-
-      const authorization = {
+      axios.post(`${API_BASE_URL}/api/v1/account/register`, {
         email,
-        password
-      }
-
-      axios.post(`${API_BASE_URL}/api/v1/account/oauth/token`, {
-        grant_type: "client_credentials"
-      }, {
-          headers: {
-              Authorization: "Basic " + Buffer.from(JSON.stringify(authorization), "utf-8").toString("base64")
-          }
+        password,
+        recaptchaToken
       }).then((response) => {
         const json = response.data;
 
@@ -42,8 +55,6 @@ const app = () => {
           localStorage.setItem("refresh_token", json.refresh_token);
 
           window.location.href = "/";
-        } else {
-          throw new Error("Invalid credentials");
         }
       })
       .catch((error) => {
@@ -62,16 +73,22 @@ const app = () => {
           theme: "dark",
         })
       })
+
+      setRegistering(false);
+      setRecaptchaToken("");
     } catch (error) {
       console.error(error);
+
+      setRegistering(false);
+      setRecaptchaToken("");
+
     } finally {
-      setSigningIn(false);
     }
   }
 
   const handleFormSubmit = (e: any) => {
     e.preventDefault();
-    handleLogin();
+    handleRegistration();
   };
 
   return (
@@ -80,23 +97,32 @@ const app = () => {
         <div className="flex flex-col items-center justify-center">
           <img src="/logo.png" alt="Flixnet Logo" className="w-48" />
           <h1 className="text-3xl font-bold mt-4">
-            Sign In
+            Register
             </h1>
           <p className="text-sm mt-2">to continue to Flixnet</p>
 
           <form className="flex flex-col mt-4" onSubmit={handleFormSubmit}>
             <input type="text" placeholder="Email or phone number" className="p-2 rounded-md focus:outline-none" id="signin-email" />
             <input type="password" placeholder="Password" className="p-2 rounded-md focus:outline-none mt-2" id="signin-password" />
-            <button 
+            
+            <ReCAPTCHA
+                sitekey="6LeaH1kpAAAAADBsFvvdycF2n2Duk9haqHcoYtfu"
+                onChange={handleRecaptchaChange as any}
+                theme="dark"
+                className="recaptcha-box"
+            />
+
+            <button
               className="bg-red-600 text-white rounded-md p-2 mt-2"
-              id="button-signin"
-              disabled={true || signingIn}>
-                {signingIn ? "Signing In..." : "Sign In"}              
+              id="button-register"
+              disabled={true}
+              aria-disabled={registering}>
+                {registering ? "Registering..." : "Register"}           
             </button>
           </form>
-          <div className="flex flex-col mt-4">
-            <p className="text-sm">New to Flixnet? <a href="/account/register" className="text-red-600">Sign up now</a>.</p>
-          </div>
+            <div className="flex flex-col mt-4">
+                <p className="text-sm">New to Flixnet? <a href="/account/login" className="text-red-600">Sign In</a>.</p>
+            </div>
           </div>
       </div>
       <div className="flex min-h-screen flex-col items-center justify-between p-24" id="grid-container">

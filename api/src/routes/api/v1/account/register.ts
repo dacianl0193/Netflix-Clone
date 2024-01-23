@@ -1,30 +1,23 @@
 import { Router, Request, Response } from 'express';
 import config from "../../../../../config.json";
-import { database } from '../../../..';
+import { database, reCaptcha } from '../../../..';
 import bcrypt from "bcrypt";
 import axios from "axios";
+import { TokenUtils } from '../../../../utils/tokenUtils';
 
 const router: Router = Router();
 
 router.post("/api/v1/account/register", async (req: Request, res: Response) => {
     const { email, password, recaptchaToken } = req.body;
 
-    /*
-    const response = await axios.post("https://www.google.com/recaptcha/api/siteverify", null, {
-        params: {
-            secret: config.recaptcha.secretKey,
-            response: recaptchaToken
-        }
-    })
-    .catch((error) => error.response);
+    const assessment = await reCaptcha.createAssessment({ token: recaptchaToken });
 
-    if (!response.data.success) {
-        return res.status(403).json({
-            error: "invalid_recaptcha_token",
-            error_description: "The recaptcha token provided is invalid."
+    if (!assessment.success) {
+        return res.status(400).json({
+            error: "recaptcha_failed",
+            error_description: "The reCAPTCHA assessment failed. Please try again."
         })
     }
-    */
 
     const account = await database.findOne("users", { email: email.toLowerCase() });
 
@@ -57,8 +50,31 @@ router.post("/api/v1/account/register", async (req: Request, res: Response) => {
         created_at: new Date().getTime()
     })
 
+    const user = await database.findOne("users", { email: email.toLowerCase() });
+
+    const token = TokenUtils.generateAccessToken(user);
+
+    const refreshToken = await (async () => {
+        const { token } = await database.findOne("tokens", { user_id: user._id, token_type: "refresh_token" }) || {};
+        if (token) { 
+            return token;
+        } else {
+            return TokenUtils.generateRefreshToken(user);
+        }
+    })()
+
+    await database.insertOne("tokens", {
+        token: refreshToken,
+        user_id: user._id,
+        token_type: "refresh_token"
+    })
+
     return res.status(200).json({
-        message: "Successfully registered."
+        _id: user._id,
+        token_type: "Bearer",
+        access_token: token,
+        refresh_token: refreshToken,
+        expires_in: config.jwt.expiresIn
     })
 })
 
