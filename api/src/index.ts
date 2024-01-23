@@ -1,27 +1,13 @@
-import { Database } from "./database"
-import config from "../config.json";
+import { Database } from "./database";
 import { Server } from "./server";
 import { Logger } from "./logger";
 import { ReCaptcha } from "./utils/reCAPTCHA";
+import config from "../config.json";
 
-export const database = new Database({
-    uri: config.database.uri,
-    database: config.database.name
-})
-
-export const server = new Server({
-    port: config.server.port
-})
-
-export const reCaptcha = new ReCaptcha({
-    secret: config.recaptcha.secretKey
-})
-
+export const database = new Database({ uri: config.database.uri, database: config.database.name })
 export const logger = new Logger();
+export const reCaptcha = new ReCaptcha({ secret: config.recaptcha.secretKey })
 
+export const server = new Server({ port: config.server.port });
 
-const main = async () => {
-    await server.start();
-}
-
-main();
+server.start();
