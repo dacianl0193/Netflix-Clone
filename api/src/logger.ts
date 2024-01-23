@@ -19,18 +19,16 @@ export class Logger {
             transports: [
                 new transports.Console({
                     format: format.combine(
-                        format.timestamp(),
-                        format.printf((info) => {
-                            const t = info.timestamp.split("T");
-                            const d = t[0].split("-");
-                            const t2 = t[1].split(":");
-                            const date = `${d[2]}/${d[1]}/${d[0]} ${t2[0]}:${t2[1]}:${t2[2].split(".")[0]}`;
-                            return `[${date}] [${info.level.toUpperCase()}] ${info.message}`
+                        format.timestamp({
+                            format: 'DD/MM/YYYY HH:mm:ss'
+                        }),
+                        format.printf(({ timestamp, level, message }) => {
+                            return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
                         })
                     )
                 })
             ]
-        })
+        });
 
         this.logger.info("Logger initialized");
     }
